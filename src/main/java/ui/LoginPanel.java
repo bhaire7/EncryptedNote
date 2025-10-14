@@ -1,5 +1,7 @@
 package ui;
 
+import database.LoginDB;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -41,10 +43,20 @@ public class LoginPanel extends JPanel {
         Signin.setBounds(130,500,140,30);
         Signin.addActionListener(e -> {
             String email = emailtx.getText();
-            String password = new String (Passf.getPassword());
-            System.out.println("Email:"+ email + "\nPassword:"+ password );
+            String password = new String(Passf.getPassword());
 
+            if (LoginDB.authenticate(email, password)) {
+                SwingUtilities.getWindowAncestor(this).dispose();
+                new LoginSucessfull();
+            } else {
+                JOptionPane.showMessageDialog(this,
+                        "Not able to log in.\nCheck your details and try again!",
+                        "Login Failed",
+                        JOptionPane.ERROR_MESSAGE);
+            }
         });
+
+
         Signin.setBorderPainted(false);
         Signin.setFocusPainted(false);
         Signin.setBackground(new Color(0x00C9A7));

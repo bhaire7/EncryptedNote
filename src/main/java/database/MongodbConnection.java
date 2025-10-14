@@ -7,7 +7,7 @@ import java.util.List;
 
     public class MongodbConnection {
         public static void main(String[] args) {
-            // Connect to MongoDB
+            // Connect to MongoDB (Build a connection)
             MongoClient mongoClient = MongoClients.create("mongodb://localhost:27017");
 
             // Select database and collection

@@ -5,6 +5,13 @@ import java.awt.*;
 
 public class Mainframe extends JFrame {
 
+    private JPanel detailsPanel;
+    private JPanel centerPanel;
+    private CardLayout cardLayout;
+
+    private LoginPanel loginPanel;
+    private RegisterPanel registerPanel;
+
     public Mainframe() {
         setTitle("Login Page");
         setSize(1000, 700);
@@ -12,15 +19,31 @@ public class Mainframe extends JFrame {
         setLayout(new BorderLayout());
         setResizable(false);
 
-        // Create panel objects
-        DetailPanel detailsPanel = new DetailPanel();
-        LoginPanel loginPanel = new LoginPanel();
+        // Left details panel
+        detailsPanel = new DetailPanel();
 
-        // Add panels to frame
+
+        // Center panel with CardLayout
+        cardLayout = new CardLayout();
+        centerPanel = new JPanel(cardLayout);
+
+        // Pass this Mainframe reference into LoginPanel
+        loginPanel = new LoginPanel(this);
+        registerPanel = new RegisterPanel(this);
+
+        centerPanel.add(loginPanel, "login");
+        centerPanel.add(registerPanel, "register");
+
         add(detailsPanel, BorderLayout.WEST);
-        add(loginPanel, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
 
+        cardLayout.show(centerPanel, "login"); // show login first
         setVisible(true);
+    }
+
+    // Method to switch cards
+    public void showPanel(String name) {
+        cardLayout.show(centerPanel, name);
     }
 
 

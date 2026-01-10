@@ -1,5 +1,12 @@
 package ui;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+
+import javax.print.Doc;
 import javax.swing.*;
 import java.awt.*;
 
@@ -41,7 +48,29 @@ public class RegisterPanel extends JPanel {
         Signin.setFocusPainted(false);
         Signin.setBackground(new Color(0x00C9A7));
         Signin.setForeground(Color.white);
+        Signin.addActionListener(e->{
+            String email = emailtx.getText();
+            String password = new String(Passf.getPassword());
+            String uri = "mongodb://localhost:27017";
+            try(MongoClient mongoClient = MongoClients.create(uri)){
+                MongoDatabase db = mongoClient.getDatabase("LoginInfo");
+                MongoCollection<Document> collection = db.getCollection("Logindetail");
+                Document dos = new Document("email", email).append("password", password);
+                collection.insertOne(dos);
+                JOptionPane.showMessageDialog(null,"Your Email and Password is added");
+
+                mainFrame.showPanel("login");
+
+
+
+            }catch (Exception ex){
+                System.out.println(ex.getMessage());
+            }
+
+                }
+        );
         add(Signin);
+
 
         JButton backToLogin = new JButton("Back to Login");
         backToLogin.setBounds(310,500,140,30);

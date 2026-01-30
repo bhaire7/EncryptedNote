@@ -1,6 +1,7 @@
 package ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -53,6 +54,7 @@ public class LoginPanel extends JPanel {
 
         gbc.gridy = 2;
         JTextField emailField = new JTextField(20);
+        emailField.setPreferredSize(new Dimension(200, 30));
         add(emailField, gbc);
 
         // Password Field
@@ -61,6 +63,7 @@ public class LoginPanel extends JPanel {
 
         gbc.gridy = 4;
         JPasswordField passwordField = new JPasswordField(20);
+        passwordField.setPreferredSize(new Dimension(200, 30));
         add(passwordField, gbc);
 
         // Sign In Button
@@ -83,17 +86,24 @@ public class LoginPanel extends JPanel {
         signInButton.addActionListener(e -> {
             String email = emailField.getText();
             String password = new String(passwordField.getPassword());
-            if (LoginDB.authenticate(email, password)) {
+            String username = LoginDB.authenticate(email, password);
+            if (username != null) {
                 SwingUtilities.getWindowAncestor(this).dispose();
-                new LoginSucessfull();
+                new HomePage(username);
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid credentials", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }
+            emailField.setText("");
+            passwordField.setText("");
         });
 
-        registerButton.addActionListener(e -> mainFrame.showPanel("register"));
+        registerButton.addActionListener(e ->{
+             mainFrame.showPanel("register");
+            });
 
         adminButton.addActionListener(e -> {
+            emailField.setText("");
+            passwordField.setText("");
             String adminCode = JOptionPane.showInputDialog(this, "Enter Admin Code:", "Admin Login", JOptionPane.PLAIN_MESSAGE);
             if (adminCode == null) return;
 
@@ -111,6 +121,7 @@ public class LoginPanel extends JPanel {
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid Admin Credentials", "Error", JOptionPane.ERROR_MESSAGE);
             }
+
         });
     }
 

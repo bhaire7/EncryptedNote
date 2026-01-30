@@ -1,6 +1,7 @@
 package ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -58,6 +59,7 @@ public class RegisterPanel extends JPanel {
 
         gbc.gridy = 2;
         userField = new JTextField(20);
+        userField.setPreferredSize(new Dimension(200, 30));
         add(userField, gbc);
 
         // Email Field
@@ -66,6 +68,7 @@ public class RegisterPanel extends JPanel {
 
         gbc.gridy = 4;
         emailField = new JTextField(20);
+        emailField.setPreferredSize(new Dimension(200, 30));
         add(emailField, gbc);
 
         // Password Field
@@ -74,6 +77,7 @@ public class RegisterPanel extends JPanel {
 
         gbc.gridy = 6;
         passwordField = new JPasswordField(20);
+        passwordField.setPreferredSize(new Dimension(200, 30));
         add(passwordField, gbc);
 
         // Sign Up Button

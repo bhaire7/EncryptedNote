@@ -13,15 +13,15 @@ public class NoteDB {
 
     private static final String CONNECTION_STRING = "mongodb://localhost:27017";
 
-    // A helper method to get a clean database name from an email
-    private static String getDatabaseName(String email) {
-        return "user_" + email.replaceAll("[^a-zA-Z0-9]", "_");
+    // A helper method to get a clean database name from a username
+    private static String getDatabaseName(String username) {
+        return "user_" + username.replaceAll("[^a-zA-Z0-9]", "_");
     }
 
     // Fetches all note titles for a specific user
-    public static List<String> getNoteTitles(String email) {
+    public static List<String> getNoteTitles(String username) {
         List<String> titles = new ArrayList<>();
-        String dbName = getDatabaseName(email);
+        String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
             if (database == null) return titles; // Connection failed
@@ -36,8 +36,8 @@ public class NoteDB {
     }
 
     // Fetches a single note's content and password
-    public static Document getNote(String email, String title) {
-        String dbName = getDatabaseName(email);
+    public static Document getNote(String username, String title) {
+        String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
             if (database == null) return null; // Connection failed
@@ -50,8 +50,8 @@ public class NoteDB {
     }
 
     // Creates a new note
-    public static void createNote(String email, String title, String content, String password) {
-        String dbName = getDatabaseName(email);
+    public static void createNote(String username, String title, String content, String password) {
+        String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
             if (database == null) return; // Connection failed
@@ -66,8 +66,8 @@ public class NoteDB {
     }
 
     // Deletes a note
-    public static void deleteNote(String email, String title) {
-        String dbName = getDatabaseName(email);
+    public static void deleteNote(String username, String title) {
+        String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
             if (database == null) return; // Connection failed
@@ -79,8 +79,8 @@ public class NoteDB {
     }
 
     // Updates a note's content and password
-    public static void updateNote(String email, String title, String newContent, String newPassword) {
-        String dbName = getDatabaseName(email);
+    public static void updateNote(String username, String title, String newContent, String newPassword) {
+        String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
             if (database == null) return; // Connection failed

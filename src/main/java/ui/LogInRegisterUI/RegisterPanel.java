@@ -118,6 +118,14 @@ public class RegisterPanel extends JPanel {
             try (MongoClient mongoClient = MongoClients.create(uri)) {
                 MongoDatabase db = mongoClient.getDatabase("LoginInfo");
                 MongoCollection<Document> collection = db.getCollection("Logindetail");
+
+                // Check if email already exists
+                Document existingUser = collection.find(new Document("email", email)).first();
+                if (existingUser != null) {
+                    JOptionPane.showMessageDialog(this, "This email is already registered. Please use another email.", "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 Document doc = new Document("user_name", username).append("email", email).append("password", password);
                 collection.insertOne(doc);
                 JOptionPane.showMessageDialog(this, "Registration successful!");

@@ -24,6 +24,7 @@ import javax.swing.JTextField;
 import org.bson.Document;
 
 import database.NoteDB;
+import utils.CryptoUtils;
 
 public class DecryptNotePanel extends JPanel {
 
@@ -32,6 +33,7 @@ public class DecryptNotePanel extends JPanel {
     private final JTextArea contentArea;
     private final JPasswordField passwordField;
     private final JButton decodeButton;
+    private final JButton encryptButton;
     private String currentTitle;
     private boolean isNewNote = false;
     private Runnable onNoteSaved;
@@ -97,8 +99,9 @@ public class DecryptNotePanel extends JPanel {
         ));
 
         decodeButton = createStyledButton("Decrypt", new Color(0x00BFA5));
-        JButton saveButton = createStyledButton("Save", new Color(0x42A5F5));
-        saveButton.addActionListener(e -> handleSave());
+        decodeButton.addActionListener(e -> handleDecrypt());
+        encryptButton = createStyledButton("Encrypt", new Color(0x42A5F5));
+        encryptButton.addActionListener(e -> handleEncryptAndSave());
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.LINE_END;
         bottomPanel.add(passwordLabel, gbc);
@@ -110,7 +113,7 @@ public class DecryptNotePanel extends JPanel {
         bottomPanel.add(decodeButton, gbc);
 
         gbc.gridx = 2; gbc.gridy = 1; gbc.anchor = GridBagConstraints.LINE_START;
-        bottomPanel.add(saveButton, gbc);
+        bottomPanel.add(encryptButton, gbc);
 
         add(titlePanel, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);
@@ -132,7 +135,9 @@ public class DecryptNotePanel extends JPanel {
             passwordField.setText(""); // Clear password field
         }
         titleField.setEditable(false);
+        contentArea.setEditable(false);
         decodeButton.setVisible(true);
+        encryptButton.setVisible(false);
     }
 
     public void prepareForNewNote() {
@@ -144,11 +149,13 @@ public class DecryptNotePanel extends JPanel {
         passwordField.setText("");
         
         titleField.setEditable(true);
+        contentArea.setEditable(true);
         decodeButton.setVisible(false);
+        encryptButton.setVisible(true);
         titleField.requestFocusInWindow();
     }
 
-    private void handleSave() {
+    private void handleEncryptAndSave() {
         String title = titleField.getText().trim();
         String content = contentArea.getText();
         String password = new String(passwordField.getPassword());
@@ -162,23 +169,61 @@ public class DecryptNotePanel extends JPanel {
             return;
         }
 
+        // Encrypt the content before saving
+        String encryptedContent = CryptoUtils.encrypt(content, password);
+
         if (isNewNote) {
-            NoteDB.createNote(userEmail, title, content, password);
+            NoteDB.createNote(userEmail, title, encryptedContent, ""); // Store encrypted content, no password
             JOptionPane.showMessageDialog(this, "Note created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             
             // Transition from "new note" state to "editing existing note" state
             this.currentTitle = title;
             this.isNewNote = false;
             titleField.setEditable(false);
-            decodeButton.setVisible(true);
 
             // Notify listener to refresh the notes list
             if (onNoteSaved != null) {
                 onNoteSaved.run();
             }
         } else {
-            NoteDB.updateNote(userEmail, currentTitle, content, password);
+            NoteDB.updateNote(userEmail, currentTitle, encryptedContent, ""); // Store encrypted content, no password
             JOptionPane.showMessageDialog(this, "Note saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        // Update UI to show encrypted state
+        contentArea.setText(encryptedContent);
+        contentArea.setEditable(false);
+        encryptButton.setVisible(false);
+        decodeButton.setVisible(true);
+        passwordField.setText(""); // Clear password after encryption
+    }
+
+    private void handleDecrypt() {
+        String encryptedContent = contentArea.getText();
+        String password = new String(passwordField.getPassword());
+
+        if (password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter a password to decrypt.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        if (encryptedContent.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "There is no content to decrypt.", "Info", JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+
+        try {
+            String decryptedContent = CryptoUtils.decrypt(encryptedContent, password);
+            if (decryptedContent != null) {
+                contentArea.setText(decryptedContent);
+                contentArea.setEditable(true);
+                encryptButton.setVisible(true);
+                decodeButton.setVisible(false);
+            } else {
+                JOptionPane.showMessageDialog(this, "Wrong password or corrupted data.", "Decryption Failed", JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "An error occurred during decryption.", "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

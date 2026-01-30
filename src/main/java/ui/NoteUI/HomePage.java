@@ -1,13 +1,13 @@
-package ui;
+package ui.NoteUI;
 
 import javax.swing.JFrame;
 import javax.swing.JSplitPane;
 
 public class HomePage extends JFrame {
 
-    private JSplitPane splitPane;
-    private TitlePanel TitlePanel;
-    private DecryptNotePanel rightPanel;
+    private final JSplitPane splitPane;
+    private final TitlePanel titlePanel;
+    private final DecryptNotePanel decryptNotePanel;
 
     public HomePage(String username) {
         setTitle("Encrypted Note Keeper");
@@ -17,13 +17,13 @@ public class HomePage extends JFrame {
         setResizable(false);
 
         // Left Panel (for notes list)
-        TitlePanel = new TitlePanel(username);
+        titlePanel = new TitlePanel(username);
 
         // Right Panel (for note content)
-        rightPanel = new DecryptNotePanel();
+        decryptNotePanel = new DecryptNotePanel();
 
         // Split Pane to divide the two panels
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, TitlePanel, rightPanel);
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, titlePanel, decryptNotePanel);
         splitPane.setDividerLocation(350);
         splitPane.setEnabled(false); // Disables user from resizing the divider
 

@@ -1,4 +1,4 @@
-package ui;
+package ui.LogInRegisterUI;
 
 import java.awt.BasicStroke;
 import java.awt.Color;

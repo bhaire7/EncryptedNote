@@ -1,5 +1,5 @@
 
-package ui;
+package ui.LogInRegisterUI;
 
 import java.awt.Color;
 import java.awt.Font;

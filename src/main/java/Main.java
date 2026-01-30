@@ -1,5 +1,5 @@
 import database.AdminDB;
-import ui.Mainframe;
+import ui.LogInRegisterUI.Mainframe;
 
 public class Main {
     public static void main(String[] args) {

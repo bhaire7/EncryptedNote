@@ -89,8 +89,7 @@ public class LoginPanel extends JPanel {
             String password = new String(passwordField.getPassword());
             String username = LoginDB.authenticate(email, password);
             if (username != null) {
-                SwingUtilities.getWindowAncestor(this).dispose();
-                new HomePage(username);
+                mainFrame.showHomePage(username, email);
             } else {
                 JOptionPane.showMessageDialog(this, "Invalid credentials", "Login Failed", JOptionPane.ERROR_MESSAGE);
             }

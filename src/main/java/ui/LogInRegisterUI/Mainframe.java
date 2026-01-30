@@ -6,6 +6,8 @@ import java.awt.CardLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import ui.NoteUI.HomePage;
+
 public class Mainframe extends JFrame {
 
     private final JPanel detailsPanel;
@@ -50,6 +52,11 @@ public class Mainframe extends JFrame {
     // Method to switch cards
     public void showPanel(String name) {
         cardLayout.show(centerPanel, name);
+    }
+
+    public void showHomePage(String username, String email) {
+        dispose(); // Close the login frame
+        new HomePage(username, email);
     }
 
 

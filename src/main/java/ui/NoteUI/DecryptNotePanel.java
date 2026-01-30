@@ -14,15 +14,30 @@ import java.awt.RenderingHints;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
+import org.bson.Document;
+
+import database.NoteDB;
+
 public class DecryptNotePanel extends JPanel {
 
-    public DecryptNotePanel() {
+    private final String userEmail;
+    private final JTextField titleField;
+    private final JTextArea contentArea;
+    private final JPasswordField passwordField;
+    private final JButton decodeButton;
+    private String currentTitle;
+    private boolean isNewNote = false;
+    private Runnable onNoteSaved;
+
+    public DecryptNotePanel(String userEmail) {
+        this.userEmail = userEmail;
         setOpaque(false);
         setLayout(new BorderLayout(10, 20));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -34,9 +49,10 @@ public class DecryptNotePanel extends JPanel {
         titleLabel.setFont(new Font("Montserrat", Font.BOLD, 16));
         titleLabel.setForeground(new Color(50, 50, 90));
         
-        JTextField titleField = new JTextField("My Social Media Pass");
+        titleField = new JTextField();
         titleField.setFont(new Font("Lato", Font.PLAIN, 16));
         titleField.setOpaque(false);
+        titleField.setEditable(false); // Not editable by default
         titleField.setBorder(BorderFactory.createCompoundBorder(
             BorderFactory.createMatteBorder(0, 0, 2, 0, new Color(120, 150, 220)),
             BorderFactory.createEmptyBorder(5, 5, 5, 5)
@@ -51,7 +67,7 @@ public class DecryptNotePanel extends JPanel {
         contentLabel.setFont(new Font("Montserrat", Font.BOLD, 16));
         contentLabel.setForeground(new Color(50, 50, 90));
         
-        JTextArea contentArea = new JTextArea();
+        contentArea = new JTextArea();
         contentArea.setFont(new Font("Monospaced", Font.PLAIN, 14));
         contentArea.setLineWrap(true);
         contentArea.setWrapStyleWord(true);
@@ -68,11 +84,11 @@ public class DecryptNotePanel extends JPanel {
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        JLabel passwordLabel = new JLabel("Password to Decrypt:");
+        JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setFont(new Font("Montserrat", Font.BOLD, 14));
         passwordLabel.setForeground(new Color(50, 50, 90));
         
-        JPasswordField passwordField = new JPasswordField(20);
+        passwordField = new JPasswordField(20);
         passwordField.setFont(new Font("Lato", Font.PLAIN, 14));
         passwordField.setOpaque(false);
         passwordField.setBorder(BorderFactory.createCompoundBorder(
@@ -80,8 +96,9 @@ public class DecryptNotePanel extends JPanel {
             BorderFactory.createEmptyBorder(5, 5, 5, 5)
         ));
 
-        JButton decodeButton = createStyledButton("Decrypt", new Color(0x00BFA5));
-        JButton cancelButton = createStyledButton("Cancel", new Color(0xEF5350));
+        decodeButton = createStyledButton("Decrypt", new Color(0x00BFA5));
+        JButton saveButton = createStyledButton("Save", new Color(0x42A5F5));
+        saveButton.addActionListener(e -> handleSave());
 
         gbc.gridx = 0; gbc.gridy = 0; gbc.anchor = GridBagConstraints.LINE_END;
         bottomPanel.add(passwordLabel, gbc);
@@ -93,11 +110,76 @@ public class DecryptNotePanel extends JPanel {
         bottomPanel.add(decodeButton, gbc);
 
         gbc.gridx = 2; gbc.gridy = 1; gbc.anchor = GridBagConstraints.LINE_START;
-        bottomPanel.add(cancelButton, gbc);
+        bottomPanel.add(saveButton, gbc);
 
         add(titlePanel, BorderLayout.NORTH);
         add(contentPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
+    }
+
+    public void setOnNoteSaved(Runnable onNoteSaved) {
+        this.onNoteSaved = onNoteSaved;
+    }
+
+    public void displayNote(String title) {
+        this.currentTitle = title;
+        this.isNewNote = false;
+        
+        Document note = NoteDB.getNote(userEmail, title);
+        if (note != null) {
+            titleField.setText(note.getString("title"));
+            contentArea.setText(note.getString("content")); // This will be encrypted text
+            passwordField.setText(""); // Clear password field
+        }
+        titleField.setEditable(false);
+        decodeButton.setVisible(true);
+    }
+
+    public void prepareForNewNote() {
+        this.currentTitle = null;
+        this.isNewNote = true;
+        
+        titleField.setText("");
+        contentArea.setText("");
+        passwordField.setText("");
+        
+        titleField.setEditable(true);
+        decodeButton.setVisible(false);
+        titleField.requestFocusInWindow();
+    }
+
+    private void handleSave() {
+        String title = titleField.getText().trim();
+        String content = contentArea.getText();
+        String password = new String(passwordField.getPassword());
+
+        if (title.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Title cannot be empty.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        if (password.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Password cannot be empty.", "Validation Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        if (isNewNote) {
+            NoteDB.createNote(userEmail, title, content, password);
+            JOptionPane.showMessageDialog(this, "Note created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+            
+            // Transition from "new note" state to "editing existing note" state
+            this.currentTitle = title;
+            this.isNewNote = false;
+            titleField.setEditable(false);
+            decodeButton.setVisible(true);
+
+            // Notify listener to refresh the notes list
+            if (onNoteSaved != null) {
+                onNoteSaved.run();
+            }
+        } else {
+            NoteDB.updateNote(userEmail, currentTitle, content, password);
+            JOptionPane.showMessageDialog(this, "Note saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
     }
 
     private JButton createStyledButton(String text, Color color) {
@@ -129,6 +211,16 @@ public class DecryptNotePanel extends JPanel {
         Color color2 = new Color(245, 245, 255);
         GradientPaint gp = new GradientPaint(0, 0, color1, 0, h, color2);
         g2d.setPaint(gp);
-        g2d.fillRect(0, 0, w, h);
+        g2d.fillRect(0, 0, w, h);}
+    
+
+    public void clearPanel() {
+        currentTitle = null;
+        isNewNote = false;
+        titleField.setText("");
+        contentArea.setText("");
+        passwordField.setText("");
+        titleField.setEditable(false);
+        decodeButton.setVisible(true);
     }
 }

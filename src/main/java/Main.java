@@ -4,6 +4,7 @@ import ui.LogInRegisterUI.Mainframe;
 public class Main {
     public static void main(String[] args) {
         AdminDB.initializeAdmin();
+        //v1
         new Mainframe();
     }
 }

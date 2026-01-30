@@ -1,16 +1,20 @@
 package ui;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 public class Mainframe extends JFrame {
 
-    private JPanel detailsPanel;
-    private JPanel centerPanel;
-    private CardLayout cardLayout;
+    private final JPanel detailsPanel;
+    private final JPanel centerPanel;
+    private final CardLayout cardLayout;
 
-    private LoginPanel loginPanel;
-    private RegisterPanel registerPanel;
+    private final LoginPanel loginPanel;
+    private final RegisterPanel registerPanel;
+    private final AdminPanel adminPanel;
 
     public Mainframe() {
         setTitle("Login Page");
@@ -30,9 +34,11 @@ public class Mainframe extends JFrame {
         // Pass this Mainframe reference into LoginPanel
         loginPanel = new LoginPanel(this);
         registerPanel = new RegisterPanel(this);
+        adminPanel = new AdminPanel(this);
 
         centerPanel.add(loginPanel, "login");
         centerPanel.add(registerPanel, "register");
+        centerPanel.add(adminPanel, "admin");
 
         add(detailsPanel, BorderLayout.WEST);
         add(centerPanel, BorderLayout.CENTER);

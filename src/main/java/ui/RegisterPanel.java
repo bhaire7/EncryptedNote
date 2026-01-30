@@ -2,7 +2,17 @@ package ui;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -20,126 +30,149 @@ import com.mongodb.client.MongoDatabase;
 
 public class RegisterPanel extends JPanel {
     private Mainframe mainFrame;
-    private JTextField UserField;
-    private JTextField emailtx;
-    private JPasswordField Passf;
+    private JTextField userField;
+    private JTextField emailField;
+    private JPasswordField passwordField;
 
     public RegisterPanel(Mainframe mainFrame) {
         this.mainFrame = mainFrame;
-        setLayout(null);
+        setOpaque(false);
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
+        // Title
+        JLabel titleLabel = new JLabel("Create Account", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("Montserrat", Font.BOLD, 36));
+        titleLabel.setForeground(Color.BLACK);
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        add(titleLabel, gbc);
 
-        JLabel title = new JLabel("Register!!", SwingConstants.CENTER);
-        title.setBounds(0,50,586,50);
-        title.setForeground(new Color(0x00BFA5));
-        title.setFont(new Font("Montserrat", Font.BOLD, 30));
-        add(title);
+        // Username Field
+        gbc.gridy = 1;
+        gbc.gridwidth = 3;
+        add(new JLabel("Username"), gbc);
 
-        JLabel UserName = new JLabel("User Name");
-        UserName.setBounds(130,140,586,50);
-        UserName.setFont(new Font("Arial", Font.PLAIN, 15));
-        add(UserName);
+        gbc.gridy = 2;
+        userField = new JTextField(20);
+        add(userField, gbc);
 
-        UserField = new JTextField();
-        UserField.setBounds(130,190,400,35);
-        add(UserField);
+        // Email Field
+        gbc.gridy = 3;
+        add(new JLabel("Email"), gbc);
 
+        gbc.gridy = 4;
+        emailField = new JTextField(20);
+        add(emailField, gbc);
 
-        JLabel Email = new JLabel("Email", SwingConstants.LEFT);
-        Email.setBounds(130,250,586,50);
-        Email.setFont(new Font("Arial", Font.PLAIN, 15));
-        add(Email);
+        // Password Field
+        gbc.gridy = 5;
+        add(new JLabel("Password"), gbc);
 
-        emailtx = new JTextField();
-        emailtx.setBounds(130,300,400,35);
-        add(emailtx);
+        gbc.gridy = 6;
+        passwordField = new JPasswordField(20);
+        add(passwordField, gbc);
 
-        JLabel Pass = new JLabel("Password", SwingConstants.LEFT);
-        Pass.setBounds(130,360,586,50);
-        Pass.setFont(new Font("Arial", Font.PLAIN, 15));
-        add(Pass);
+        // Sign Up Button
+        gbc.gridy = 7;
+        gbc.gridwidth = 2;
+        JButton signUpButton = createStyledButton("Sign Up", new Color(0x00BFA5));
+        add(signUpButton, gbc);
 
-        Passf = new JPasswordField();
-        Passf.setBounds(130,410,400,35);
-        add(Passf);
+        // Back to Login Button
+        gbc.gridy = 8;
+        JButton backToLoginButton = createStyledButton("Back to Login", new Color(0x2196F3));
+        add(backToLoginButton, gbc);
 
-        JButton Signin = new JButton("Sign In");
-        Signin.setBounds(130,500,140,30);
-        Signin.setBorderPainted(false);
-        Signin.setFocusPainted(false);
-        Signin.setBackground(new Color(0x00C9A7));
-        Signin.setForeground(Color.white);
-        Signin.addActionListener(e->{
-            String email = emailtx.getText();
-            String username = UserField.getText();
-            String password = new String(Passf.getPassword());
+        // Action Listeners
+        signUpButton.addActionListener(e -> {
+            String username = userField.getText();
+            String email = emailField.getText();
+            String password = new String(passwordField.getPassword());
 
             if (username.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "All fields must be filled out", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "All fields must be filled out", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
             if (username.length() < 4) {
-                JOptionPane.showMessageDialog(null, "Username must be at least 4 characters long", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Username must be at least 4 characters long", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
             if (password.length() < 5) {
-                JOptionPane.showMessageDialog(null, "Password must be at least 5 characters long", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Password must be at least 5 characters long", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-
             if (!isValidEmail(email)) {
-                JOptionPane.showMessageDialog(null, "Invalid Email Format", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Invalid Email Format", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
             String uri = "mongodb://localhost:27017";
-            try(MongoClient mongoClient = MongoClients.create(uri)){
+            try (MongoClient mongoClient = MongoClients.create(uri)) {
                 MongoDatabase db = mongoClient.getDatabase("LoginInfo");
                 MongoCollection<Document> collection = db.getCollection("Logindetail");
-                Document dos = new Document("user_name", username).append("email", email).append("password", password);
-                collection.insertOne(dos);
-                JOptionPane.showMessageDialog(null,"Your User Name, Email and Password is added");
-
+                Document doc = new Document("user_name", username).append("email", email).append("password", password);
+                collection.insertOne(doc);
+                JOptionPane.showMessageDialog(this, "Registration successful!");
                 clearFields();
                 mainFrame.showPanel("login");
-
-
-
-            }catch (Exception ex){
-                System.out.println(ex.getMessage());
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Registration failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             }
+        });
 
-                }
-        );
-        add(Signin);
-
-
-        JButton backToLogin = new JButton("Back to Login");
-        backToLogin.setBounds(310,500,140,30);
-        backToLogin.setBackground(new Color(0x2196F3));
-        backToLogin.setForeground(Color.white);
-        backToLogin.setBorderPainted(false);
-        backToLogin.setFocusPainted(false);
-        backToLogin.addActionListener(e -> {
+        backToLoginButton.addActionListener(e -> {
             clearFields();
             mainFrame.showPanel("login");
         });
-        add(backToLogin);
+    }
+
+    private JButton createStyledButton(String text, Color color) {
+        JButton button = new JButton(text);
+        button.setBackground(color);
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Montserrat", Font.BOLD, 14));
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(color.darker());
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(color);
+            }
+        });
+        return button;
     }
 
     private void clearFields() {
-        UserField.setText("");
-        emailtx.setText("");
-        Passf.setText("");
+        userField.setText("");
+        emailField.setText("");
+        passwordField.setText("");
     }
 
     private boolean isValidEmail(String email) {
-        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\."+
-                            "[a-zA-Z0-9_+&*-]+)*@" +
-                            "(?:[a-zA-Z0-9-]+\\.)+[a-z" +
-                            "A-Z]{2,7}$";
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
         return email.matches(emailRegex);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        int w = getWidth();
+        int h = getHeight();
+        Color color1 = new Color(0xFFFFFF);
+        Color color2 = new Color(0xE0E0E0);
+        GradientPaint gp = new GradientPaint(0, 0, color1, 0, h, color2);
+        g2d.setPaint(gp);
+        g2d.fillRect(0, 0, w, h);
     }
 }

@@ -15,8 +15,8 @@ public class CryptoUtils {
 
     private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
     private static final String SECRET_KEY_FACTORY_ALGORITHM = "PBKDF2WithHmacSHA256";
-    private static final byte[] IV = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; // A fixed IV for simplicity, but a random one is better for production
-    private static final String SALT = "YourSaltHere"; // Should be unique and stored securely
+    private static final byte[] IV = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; 
+    private static final String SALT = "YourSaltHere"; 
 
     private static SecretKey getKeyFromPassword(String password) throws Exception {
         SecretKeyFactory factory = SecretKeyFactory.getInstance(SECRET_KEY_FACTORY_ALGORITHM);
@@ -33,7 +33,7 @@ public class CryptoUtils {
             byte[] cipherText = cipher.doFinal(input.getBytes(StandardCharsets.UTF_8));
             return Base64.getEncoder().encodeToString(cipherText);
         } catch (Exception e) {
-            // In a real app, handle this more gracefully
+            
             throw new RuntimeException("Error encrypting data", e);
         }
     }
@@ -46,7 +46,7 @@ public class CryptoUtils {
             byte[] plainText = cipher.doFinal(Base64.getDecoder().decode(cipherText));
             return new String(plainText, StandardCharsets.UTF_8);
         } catch (Exception e) {
-            // This can happen if the password is wrong
+            
             return null; 
         }
     }

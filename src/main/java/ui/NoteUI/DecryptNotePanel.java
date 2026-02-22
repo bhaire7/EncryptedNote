@@ -28,7 +28,7 @@ import utils.CryptoUtils;
 
 public class DecryptNotePanel extends JPanel {
 
-    private final String userEmail;
+    private final String username;
     private final JTextField titleField;
     private final JTextArea contentArea;
     private final JPasswordField passwordField;
@@ -38,8 +38,8 @@ public class DecryptNotePanel extends JPanel {
     private boolean isNewNote = false;
     private Runnable onNoteSaved;
 
-    public DecryptNotePanel(String userEmail) {
-        this.userEmail = userEmail;
+    public DecryptNotePanel(String username) {
+        this.username = username;
         setOpaque(false);
         setLayout(new BorderLayout(10, 20));
         setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
@@ -128,7 +128,7 @@ public class DecryptNotePanel extends JPanel {
         this.currentTitle = title;
         this.isNewNote = false;
         
-        Document note = NoteDB.getNote(userEmail, title);
+        Document note = NoteDB.getNote(username, title);
         if (note != null) {
             titleField.setText(note.getString("title"));
             contentArea.setText(note.getString("content")); // This will be encrypted text
@@ -173,7 +173,7 @@ public class DecryptNotePanel extends JPanel {
         String encryptedContent = CryptoUtils.encrypt(content, password);
 
         if (isNewNote) {
-            NoteDB.createNote(userEmail, title, encryptedContent, ""); // Store encrypted content, no password
+            NoteDB.createNote(username, title, encryptedContent, password); // Store encrypted content and password
             JOptionPane.showMessageDialog(this, "Note created successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
             
             // Transition from "new note" state to "editing existing note" state
@@ -181,13 +181,14 @@ public class DecryptNotePanel extends JPanel {
             this.isNewNote = false;
             titleField.setEditable(false);
 
-            // Notify listener to refresh the notes list
-            if (onNoteSaved != null) {
-                onNoteSaved.run();
-            }
         } else {
-            NoteDB.updateNote(userEmail, currentTitle, encryptedContent, ""); // Store encrypted content, no password
+            NoteDB.updateNote(username, currentTitle, encryptedContent, password); // Store encrypted content and password
             JOptionPane.showMessageDialog(this, "Note saved successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        // Notify listener to refresh the notes list in both cases
+        if (onNoteSaved != null) {
+            onNoteSaved.run();
         }
 
         // Update UI to show encrypted state

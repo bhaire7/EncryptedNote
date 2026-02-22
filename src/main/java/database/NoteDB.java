@@ -91,4 +91,46 @@ public class NoteDB {
             e.printStackTrace();
         }
     }
+
+    // Drops an entire user database
+    public static void dropUserDatabase(String username) {
+        String dbName = getDatabaseName(username);
+        try {
+            MongoDatabase database = DatabaseManager.getDatabase(dbName);
+            if (database != null) {
+                database.drop();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void renameUserDatabase(String oldUsername, String newUsername) {
+        String oldDbName = getDatabaseName(oldUsername);
+        String newDbName = getDatabaseName(newUsername);
+
+        try {
+            // Get the admin database to run the copydb command
+            MongoDatabase adminDb = DatabaseManager.getDatabase("admin");
+
+            // Create the command document
+            Document command = new Document("copydb", 1)
+                                .append("fromdb", oldDbName)
+                                .append("todb", newDbName);
+
+            // Execute the command
+            adminDb.runCommand(command);
+
+            // Drop the old database after a successful copy
+            MongoDatabase oldDatabase = DatabaseManager.getDatabase(oldDbName);
+            if (oldDatabase != null) {
+                oldDatabase.drop();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Handle exceptions, perhaps by showing an error message to the user
+            JOptionPane.showMessageDialog(null, "Failed to migrate user data. Please try again.", "Migration Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
 }

@@ -2,7 +2,6 @@ package ui.NoteUI;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GradientPaint;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -28,20 +26,19 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import database.NoteDB;
-
 import ui.LogInRegisterUI.Mainframe;
 
 public class TitlePanel extends JPanel {
 
     private final DefaultListModel<String> listModel;
     private final JList<String> notesList;
-    private final String userEmail;
+    private final String username; // Changed from userEmail
     private Consumer<String> noteSelectionListener;
     private Runnable newNoteListener;
     private Runnable onNoteDeleted;
 
     public TitlePanel(String username, String userEmail) {
-        this.userEmail = userEmail;
+        this.username = username; // Use username
         setOpaque(false);
         setLayout(new BorderLayout(10, 10));
         setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
@@ -108,7 +105,7 @@ public class TitlePanel extends JPanel {
             if (selectedTitle != null) {
                 int choice = JOptionPane.showConfirmDialog(this, "Are you sure you want to delete this note?", "Delete Note", JOptionPane.YES_NO_OPTION);
                 if (choice == JOptionPane.YES_OPTION) {
-                    NoteDB.deleteNote(userEmail, selectedTitle);
+                    NoteDB.deleteNote(username, selectedTitle); // Use username
                     refreshNotesList();
                     if (onNoteDeleted != null) {
                         onNoteDeleted.run();
@@ -138,16 +135,16 @@ public class TitlePanel extends JPanel {
         this.onNoteDeleted = listener;
     }
 
+    public void refreshNotesList() {
+        loadNotes();
+    }
+
     private void loadNotes() {
         listModel.clear();
-        List<String> titles = NoteDB.getNoteTitles(userEmail);
+        List<String> titles = NoteDB.getNoteTitles(username); // Use username
         for (String title : titles) {
             listModel.addElement(title);
         }
-    }
-
-    public void refreshNotesList() {
-        loadNotes();
     }
 
     private JButton createStyledButton(String text, Color color) {
@@ -156,7 +153,7 @@ public class TitlePanel extends JPanel {
         button.setForeground(Color.WHITE);
         button.setFont(new Font("Montserrat", Font.BOLD, 12));
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 button.setBackground(color.darker());
@@ -182,10 +179,9 @@ public class TitlePanel extends JPanel {
         g2d.fillRect(0, 0, w, h);
     }
 
-    // Custom cell renderer for the JList
-    private static class NoteListCellRenderer extends DefaultListCellRenderer {
+    private static class NoteListCellRenderer extends javax.swing.DefaultListCellRenderer {
         @Override
-        public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public java.awt.Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JLabel label = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             label.setFont(new Font("Lato", Font.PLAIN, 16));
             label.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));

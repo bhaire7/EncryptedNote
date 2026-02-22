@@ -20,7 +20,7 @@ public class HomePage extends JFrame {
         titlePanel = new TitlePanel(username, userEmail);
 
         // Right Panel (for note content)
-        decryptNotePanel = new DecryptNotePanel(userEmail);
+        decryptNotePanel = new DecryptNotePanel(username);
 
         // Set up the listeners
         titlePanel.setNoteSelectionListener(title -> decryptNotePanel.displayNote(title));

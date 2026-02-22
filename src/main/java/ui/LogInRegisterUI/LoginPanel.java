@@ -21,15 +21,13 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 
-import database.AdminDB;
 import database.LoginDB;
-import ui.NoteUI.HomePage;
 
 public class LoginPanel extends JPanel {
 
     private Mainframe mainFrame;
+    private JPasswordField passwordField;
 
     public LoginPanel(Mainframe mainFrame) {
         this.mainFrame = mainFrame;
@@ -63,7 +61,7 @@ public class LoginPanel extends JPanel {
         add(new JLabel("Password"), gbc);
 
         gbc.gridy = 4;
-        JPasswordField passwordField = new JPasswordField(20);
+        passwordField = new JPasswordField(20);
         passwordField.setPreferredSize(new Dimension(200, 30));
         add(passwordField, gbc);
 
@@ -78,15 +76,18 @@ public class LoginPanel extends JPanel {
         JButton registerButton = createStyledButton("Register Now!", new Color(0x2196F3));
         add(registerButton, gbc);
 
-        // Admin Button
+        // Admin Login Button
         gbc.gridy = 7;
-        JButton adminButton = createStyledButton("Admin", new Color(0xF39C12));
-        add(adminButton, gbc);
+        gbc.gridwidth = 2;
+        JButton adminLoginButton = createStyledButton("Admin Login", new Color(0x757575));
+        add(adminLoginButton, gbc);
+
 
         // Action Listeners
         signInButton.addActionListener(e -> {
             String email = emailField.getText();
             String password = new String(passwordField.getPassword());
+
             String username = LoginDB.authenticate(email, password);
             if (username != null) {
                 mainFrame.showHomePage(username, email);
@@ -97,32 +98,18 @@ public class LoginPanel extends JPanel {
             passwordField.setText("");
         });
 
-        registerButton.addActionListener(e ->{
+        registerButton.addActionListener(e -> {
              mainFrame.showPanel("register");
             });
 
-        adminButton.addActionListener(e -> {
-            emailField.setText("");
-            passwordField.setText("");
-            String adminCode = JOptionPane.showInputDialog(this, "Enter Admin Code:", "Admin Login", JOptionPane.PLAIN_MESSAGE);
-            if (adminCode == null) return;
-
-            String adminUsername = JOptionPane.showInputDialog(this, "Enter Admin Username:", "Admin Login", JOptionPane.PLAIN_MESSAGE);
-            if (adminUsername == null) return;
-
-            JPasswordField adminPasswordField = new JPasswordField();
-            int option = JOptionPane.showConfirmDialog(this, adminPasswordField, "Enter Admin Password:", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-            if (option != JOptionPane.OK_OPTION) return;
-
-            String adminPassword = new String(adminPasswordField.getPassword());
-
-            if (AdminDB.authenticate(adminCode, adminUsername, adminPassword)) {
-                mainFrame.showPanel("admin");
-            } else {
-                JOptionPane.showMessageDialog(this, "Invalid Admin Credentials", "Error", JOptionPane.ERROR_MESSAGE);
-            }
-
+        adminLoginButton.addActionListener(e -> {
+            mainFrame.showPanel("adminLogin");
         });
+
+    }
+
+    public void clearPasswordField() {
+        passwordField.setText("");
     }
 
     private JButton createStyledButton(String text, Color color) {

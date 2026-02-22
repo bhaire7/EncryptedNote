@@ -11,9 +11,9 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class CryptoUtils {
 
-    // private static final String ALGORITHM = "AES/CBC/PKCS5Padding";
+   
     private static final String SECRET_KEY_FACTORY_ALGORITHM = "PBKDF2WithHmacSHA256";
-    // private static final byte[] IV = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 }; 
+    
     private static final String SALT = "YourSaltHere"; 
 
     private static SecretKey getKeyFromPassword(String password) throws Exception {

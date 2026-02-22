@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 
@@ -40,6 +41,7 @@ public class AdminPanel extends JPanel {
     private JList<String> userList;
     private DefaultListModel<String> noteListModel;
     private JList<String> noteTitlesList;
+    private JTextArea noteContentArea;
     private JTextField usernameField;
     private JTextField emailField;
     private JTextField passwordField;
@@ -139,7 +141,24 @@ public class AdminPanel extends JPanel {
         JScrollPane notesScrollPane = new JScrollPane(noteTitlesList);
         notesScrollPane.getViewport().setOpaque(false);
         notesScrollPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        notesPanel.add(notesScrollPane, BorderLayout.CENTER);
+
+        noteContentArea = new JTextArea();
+        noteContentArea.setOpaque(false);
+        noteContentArea.setEditable(false);
+        noteContentArea.setFont(new Font("Lato", Font.PLAIN, 14));
+        noteContentArea.setLineWrap(true);
+        noteContentArea.setWrapStyleWord(true);
+        noteContentArea.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        JScrollPane contentScrollPane = new JScrollPane(noteContentArea);
+        contentScrollPane.getViewport().setOpaque(false);
+        contentScrollPane.setBorder(BorderFactory.createEmptyBorder());
+
+        JSplitPane notesSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, notesScrollPane, contentScrollPane);
+        notesSplitPane.setDividerLocation(150);
+        notesSplitPane.setOpaque(false);
+        notesSplitPane.setBorder(BorderFactory.createEmptyBorder());
+
+        notesPanel.add(notesSplitPane, BorderLayout.CENTER);
         detailsAndNotesPanel.add(notesPanel, BorderLayout.CENTER);
 
 
@@ -180,6 +199,17 @@ public class AdminPanel extends JPanel {
                     displayUserNotes(selectedUser.getString("user_name"));
                 } else {
                     clearSelection();
+                }
+            }
+        });
+
+        noteTitlesList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                String selectedTitle = noteTitlesList.getSelectedValue();
+                if (selectedUser != null && selectedTitle != null && !selectedTitle.equals("No notes found for this user.")) {
+                    displayNoteContent(selectedUser.getString("user_name"), selectedTitle);
+                } else {
+                    noteContentArea.setText("");
                 }
             }
         });
@@ -276,6 +306,22 @@ public class AdminPanel extends JPanel {
                 }
             }
         }
+        clearNoteSelection();
+    }
+
+    private void displayNoteContent(String username, String title) {
+        Document note = NoteDB.getNoteByTitle(username, title);
+        if (note != null) {
+            String content = note.getString("content");
+            String password = note.getString("password");
+            if (password != null && !password.isEmpty()) {
+                noteContentArea.setText("This note is password protected.");
+            } else {
+                noteContentArea.setText(content);
+            }
+        } else {
+            noteContentArea.setText("");
+        }
     }
 
     private void saveUserChanges() {
@@ -349,6 +395,12 @@ public class AdminPanel extends JPanel {
         passwordField.setText("");
         selectedUser = null;
         noteListModel.clear();
+        clearNoteSelection();
+    }
+
+    private void clearNoteSelection() {
+        noteTitlesList.clearSelection();
+        noteContentArea.setText("");
     }
 
     // Custom cell renderer for the JList

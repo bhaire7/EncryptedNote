@@ -11,20 +11,16 @@ import com.mongodb.client.model.Filters;
 
 public class NoteDB {
 
-    private static final String CONNECTION_STRING = "mongodb://localhost:27017";
-
-    // A helper method to get a clean database name from a username
     private static String getDatabaseName(String username) {
         return "user_" + username.replaceAll("[^a-zA-Z0-9]", "_");
     }
 
-    // Fetches all note titles for a specific user
     public static List<String> getNoteTitles(String username) {
         List<String> titles = new ArrayList<>();
         String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
-            if (database == null) return titles; // Connection failed
+            if (database == null) return titles;
             MongoCollection<Document> collection = database.getCollection("notes");
             for (Document doc : collection.find()) {
                 titles.add(doc.getString("title"));
@@ -35,12 +31,11 @@ public class NoteDB {
         return titles;
     }
 
-    // Fetches a single note's content and password
     public static Document getNote(String username, String title) {
         String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
-            if (database == null) return null; // Connection failed
+            if (database == null) return null;
             MongoCollection<Document> collection = database.getCollection("notes");
             return collection.find(Filters.eq("title", title)).first();
         } catch (Exception e) {
@@ -49,28 +44,26 @@ public class NoteDB {
         }
     }
 
-    // Creates a new note
     public static void createNote(String username, String title, String content, String password) {
         String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
-            if (database == null) return; // Connection failed
+            if (database == null) return;
             MongoCollection<Document> collection = database.getCollection("notes");
             Document newNote = new Document("title", title)
-                    .append("content", content) // Should be encrypted
-                    .append("password", password); // Hashed password for decryption
+                    .append("content", content)
+                    .append("password", password);
             collection.insertOne(newNote);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Deletes a note
     public static void deleteNote(String username, String title) {
         String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
-            if (database == null) return; // Connection failed
+            if (database == null) return;
             MongoCollection<Document> collection = database.getCollection("notes");
             collection.deleteOne(Filters.eq("title", title));
         } catch (Exception e) {
@@ -78,12 +71,11 @@ public class NoteDB {
         }
     }
 
-    // Updates a note's content and password
     public static void updateNote(String username, String title, String newContent, String newPassword) {
         String dbName = getDatabaseName(username);
         try {
             MongoDatabase database = DatabaseManager.getDatabase(dbName);
-            if (database == null) return; // Connection failed
+            if (database == null) return;
             MongoCollection<Document> collection = database.getCollection("notes");
             Document update = new Document("$set", new Document("content", newContent).append("password", newPassword));
             collection.updateOne(Filters.eq("title", title), update);
@@ -92,7 +84,6 @@ public class NoteDB {
         }
     }
 
-    // Drops an entire user database
     public static void dropUserDatabase(String username) {
         String dbName = getDatabaseName(username);
         try {
@@ -110,18 +101,14 @@ public class NoteDB {
         String newDbName = getDatabaseName(newUsername);
 
         try {
-            // Get the admin database to run the copydb command
             MongoDatabase adminDb = DatabaseManager.getDatabase("admin");
 
-            // Create the command document
             Document command = new Document("copydb", 1)
                                 .append("fromdb", oldDbName)
                                 .append("todb", newDbName);
 
-            // Execute the command
             adminDb.runCommand(command);
 
-            // Drop the old database after a successful copy
             MongoDatabase oldDatabase = DatabaseManager.getDatabase(oldDbName);
             if (oldDatabase != null) {
                 oldDatabase.drop();
@@ -129,7 +116,6 @@ public class NoteDB {
 
         } catch (Exception e) {
             e.printStackTrace();
-            // Handle exceptions, perhaps by showing an error message to the user
             JOptionPane.showMessageDialog(null, "Failed to migrate user data. Please try again.", "Migration Error", JOptionPane.ERROR_MESSAGE);
         }
     }

@@ -110,6 +110,7 @@ public class AdminPanel extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         usernameField = createStyledTextField();
+        usernameField.setEditable(false);
         emailField = createStyledTextField();
         passwordField = createStyledTextField();
 
@@ -330,31 +331,22 @@ public class AdminPanel extends JPanel {
             return;
         }
 
-        String originalUsername = selectedUser.getString("user_name");
         String originalEmail = selectedUser.getString("email");
-        String newUsername = usernameField.getText();
         String newEmail = emailField.getText();
         String newPassword = passwordField.getText();
 
-        if (newUsername.isEmpty() || newEmail.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Username and Email fields must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
+        if (newEmail.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Email field must be filled.", "Error", JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // Check if the username has changed
-        if (!originalUsername.equals(newUsername)) {
-            // Rename the database before updating the user details
-            NoteDB.renameUserDatabase(originalUsername, newUsername);
-        }
-
         // The updateUser method expects individual strings, not a Document
-        UserDB.updateUser(originalEmail, newUsername, newEmail, newPassword);
+        UserDB.updateUser(originalEmail, selectedUser.getString("user_name"), newEmail, newPassword);
         
         JOptionPane.showMessageDialog(this, "User details updated successfully.", "Success", JOptionPane.INFORMATION_MESSAGE);
         
         // Refresh the user list and re-select the user
-        int selectedIndex = userList.getSelectedIndex();
-        loadUsers(); // This will now show the new username
+        loadUsers();
         
         // Find the new index of the user and re-select them
         for (int i = 0; i < users.size(); i++) {
